@@ -1,31 +1,33 @@
+using System.Runtime.InteropServices;
 using TMPro;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.UIElements;
-
-
-
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class TalkingScript : MonoBehaviour
 {
+    public GameObject policeChief;
+    public GameObject detective;
 
-    public struct conversation {
+    [System.Serializable]
+    public class ConversationData
+    {
         public string text;
         public GameObject speaker;
     }
 
-    public GameObject policeChief;
-    public GameObject detective;
-
-    public conversation[] conversations;
+    public ConversationData[] conversations;
 
     private int dialougeNumber;
-    public TMP_Text txt;
+    private TMP_Text txt;
     public float typingSpeed;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         //policeChief.GetComponent<SliderInt>().slide;
+        policeChief.SetActive(false);
+        detective.SetActive(false);
+        NextDialouge();
     }
 
     // Update is called once per frame
@@ -36,9 +38,35 @@ public class TalkingScript : MonoBehaviour
 
     public void NextDialouge()
     {
+        if (dialougeNumber >= conversations.Length)
+        {
+            SceneManager.LoadScene("MainGame");
+            return;
+        }
+
+        ConversationData current = conversations[dialougeNumber];
+        if (current.speaker == policeChief)
+        {
+            detective.SetActive(false);
+            policeChief.SetActive(true);
+        }
+        else if (current.speaker == detective)
+        {
+            policeChief.SetActive(false);
+            detective.SetActive(true);
+        }
+        GameObject currentSpeaker = current.speaker;
+
+        Button btn = currentSpeaker.GetComponentInChildren<Button>();
+
+        btn.gameObject.SetActive(false);
         StopAllCoroutines();
+        txt = currentSpeaker.GetComponentInChildren<TMP_Text>();
         StartCoroutine(TypeDialogue(conversations[dialougeNumber].text));
+
+        btn.gameObject.SetActive(true);
         dialougeNumber++;
+        
     }
     private System.Collections.IEnumerator TypeDialogue(string dialogue)
     {
@@ -48,5 +76,6 @@ public class TalkingScript : MonoBehaviour
             txt.text += letter;
             yield return new WaitForSeconds(typingSpeed); // Adjust typing speed as needed
         }
+
     }
 }
