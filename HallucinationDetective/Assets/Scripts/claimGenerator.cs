@@ -36,6 +36,7 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     public bool isTutorialPosTrue = false;
     public bool isTutorialPosHall = false;
 
+    private TextAsset claimsTa;
 
     // Make a dictionary of max difficulty based on current score
     // e.g. 0-10 = 1, 11-25 = 2, 26-50 = 3, 51+ = 4
@@ -55,6 +56,9 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     // add (optional) cached canvas camera if you prefer
     Canvas canvas;
     void Awake() {
+        claimsTa = Resources.Load<TextAsset>("claims");
+
+
         if (!card) card = transform as RectTransform;
         if (!canvasRoot) canvasRoot = card.root as RectTransform;
         canvas = canvasRoot.GetComponentInParent<Canvas>();
@@ -77,8 +81,7 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         cardSpawner.SpawnCard();
 
         detectiveNotesText.text = "";
-        string json = System.IO.File.ReadAllText(Application.dataPath + "/Resources/claims.json");
-        var root = JsonUtility.FromJson<Root>(json);
+        var root = JsonUtility.FromJson<Root>(claimsTa.text);
         var filtered = Array.FindAll(root.claims, c => c.difficulty <= max_difficulty);
         if (filtered.Length == 0) return;
 

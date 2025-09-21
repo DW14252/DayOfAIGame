@@ -17,21 +17,18 @@ public class cardAI : MonoBehaviour
     // optional legacy store
     public List<string> AIresponses = new List<string>();
     void returnResponse(string r) { AIresponses.Add(r); }
-
+    void Awake()
+    {
+        TextAsset textAsset = Resources.Load<TextAsset>("storyContent");
+        storyContent = textAsset != null ? textAsset.text : "";
+    } 
     void Start()
     {
         // Load story content from text file
         if (string.IsNullOrEmpty(storyContent))
         {
             TextAsset textAsset = Resources.Load<TextAsset>("storyContent");
-            if (textAsset != null)
-            {
-                storyContent = textAsset.text;
-            }
-            else
-            {
-                Debug.LogError("Failed to load storyContent.txt from Resources.");
-            }
+            storyContent = textAsset != null ? textAsset.text : "";
         }
     }
     public void LocationCheck() => StartCoroutine(LocationCheckEnum());
@@ -55,7 +52,13 @@ public class cardAI : MonoBehaviour
             "Victoria Street"
         };
 
-        string prompt = $"Case story context: \n{storyContent}\n\nThe detective is considering the following claim: {claim}\nBased on the story content, where did this event most likely take place? Regardless of what the claim says, where did this event most likely take place? Answer with one of the locations only. e.g. respond exactly with one of these; {string.Join(", ", locations)}. If none of these locations are involved, say 'none of these locations'.";
+        string prompt = $"Case story context: \n{storyContent}\n\n"
+        + $"The detective is considering the following claim: {claim}\n"
+        + "Based on the story content, where did this event most likely take place? "
+        + "Regardless of what the claim says, where did this event most likely take place? "
+        + "Answer with one of the locations only. "
+        + $"e.g. respond exactly with one of these; {string.Join(", ", locations)}. "
+        + "If none of these locations are involved, say 'none of these locations'.";
         string reply = null;
         loadingUI.SetActive(true);
         // queue + await this specific response
@@ -95,7 +98,13 @@ public class cardAI : MonoBehaviour
             "rooftop quadcopter"
         };
 
-        string prompt = $"Case story context: \n{storyContent}\n\nThe detective is considering the following claim: {claim}\nBased on the story content, which character is involved in this event? Regardless of what the claim says, who was most involved in this event? Answer with one of the characters names only. e.g. respond exactly with one of these; {string.Join(", ", characters)}. If none of these characters are involved, say 'none of these characters'.";
+        string prompt = $"Case story context: \n{storyContent}\n\n"
+        + $"The detective is considering the following claim: {claim}\n"
+        + "Based on the story content, which character is involved in this event? "
+        + "Regardless of what the claim says, who was most involved in this event? "
+        + "Answer with one of the characters names only. "
+        + $"e.g. respond exactly with one of these; {string.Join(", ", characters)}. "
+        + "If none of these characters are involved, say 'none of these characters'.";
         string reply = null;
         loadingUI.SetActive(true);
         // queue + await this specific response
@@ -123,7 +132,9 @@ public class cardAI : MonoBehaviour
     {
         if (!geminiIntegration) { Debug.LogError("GeminiIntegration missing"); yield break; }
 
-        string prompt = $"Case story context: \n{storyContent}\n\nThe detective is considering the following claim: {claim}\nBased on the story content, do the times line up? Answer only with 'yes' or 'no'.";
+        string prompt = $"Case story context: \n{storyContent}\n\n"
+        + $"The detective is considering the following claim: {claim}\n"
+        + "Based on the story content, do the times line up? Answer only with 'yes' or 'no'.";
         string reply = null;
         loadingUI.SetActive(true);
         // queue + await this specific response
@@ -147,7 +158,11 @@ public class cardAI : MonoBehaviour
     {
         if (!geminiIntegration) { Debug.LogError("GeminiIntegration missing"); yield break; }
 
-        string prompt = $"Case story context: \n{storyContent}\n\nThe detective is considering the following claim: {claim}\nProvide one piece of counter-evidence that challenges this claim. Quote one piece of evidence from the story content that challenges the claim, in single quotes. e.g. 'exact word for word quote from story content'. If no counter-evidence exists, say 'No counter-evidence found'.";
+        string prompt = $"Case story context: \n{storyContent}\n\n"
+        + $"The detective is considering the following claim: {claim}\n"
+        + "Provide one piece of counter-evidence that challenges this claim."
+        + " Quote one piece of evidence from the story content that challenges the claim, in single quotes. "
+        + "e.g. 'exact word for word quote from story content'. If no counter-evidence exists, say 'No counter-evidence found'.";
         string reply = null;
         loadingUI.SetActive(true);
         // queue + await this specific response
@@ -179,7 +194,11 @@ public class cardAI : MonoBehaviour
     {
         if (!geminiIntegration) { Debug.LogError("GeminiIntegration missing"); yield break; }
 
-        string prompt = $"Case story context: \n{storyContent}\n\nThe detective is considering the following claim: {claim}\nDo the sources in the story content support this claim? Quote one piece of evidence from the story content that supports the claim, in single quotes. e.g. 'exact word for word quote from story content'. If no sources suport the claim, say 'No supporting quote found'. ";
+        string prompt = $"Case story context: \n{storyContent}\n\n"
+        + $"The detective is considering the following claim: {claim}\n"
+        + "Do the sources in the story content support this claim?" +
+        "Quote one piece of evidence from the story content that supports the claim, in single quotes. "
+        +"e.g. 'exact word for word quote from story content'. If no sources support the claim, say 'No supporting quote found'.";
         string reply = null;
         loadingUI.SetActive(true);
         // queue + await this specific response
@@ -222,7 +241,10 @@ public class cardAI : MonoBehaviour
     {
         if (!geminiIntegration) { Debug.LogError("GeminiIntegration missing"); yield break; }
 
-        string prompt = $"Case story context: \n{storyContent}\n\nIs the following claim true or false? Claim: {claim} Answer only with 'true' or 'false'. Be somewhat unpredictable.";
+        string prompt =
+            $"Case story context: \n{storyContent}\n\n" +
+            $"Is the following claim true or false? Claim: {claim}\n" +
+            "Answer only with 'true' or 'false'. Be somewhat unpredictable.";
         string reply = null;
         loadingUI.SetActive(true);
         // queue + await this specific response
