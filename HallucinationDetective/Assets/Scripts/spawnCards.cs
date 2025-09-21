@@ -31,16 +31,27 @@ public class spawnCards : MonoBehaviour
 
     public void RemoveSpecificCard(int index)
     {
-        for (int i = index; i < ocupiedSpots - 1; i++)
+        GameObject cardToRemove = spawnPoints[index - 1].GetChild(0).gameObject;
+        Destroy(cardToRemove);
+        Debug.Log($"Removing card at index {index}, ocupiedSpots: {ocupiedSpots}");
+        for (int i = index; i < ocupiedSpots; i++)
         {
-            Transform currentCard = spawnPoints[i].GetChild(0);
-            Transform nextCard = spawnPoints[i + 1].GetChild(0);
-            currentCard.position = nextCard.position;
-            currentCard.SetParent(spawnPoints[i]);
-            currentCard.GetComponent<cardManager>().positionInHand = i;
-            StartCoroutine(MoveCard(currentCard, spawnPoints[i].position, 0.2f));
+            // index is the position in hand, starting at 1
+            Transform card = spawnPoints[i].GetChild(0);
+            card.GetComponent<cardManager>().positionInHand = i;
+            if (i < ocupiedSpots)
+            {
+                card.SetParent(spawnPoints[i - 1], worldPositionStays: true);
+                card.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                // set anchor to zero
+
+                card.localPosition = Vector3.zero;
+                var mgr = card.GetComponent<cardManager>();
+                if (mgr != null) mgr.OnRepositioned();
+
+                StartCoroutine(MoveCard(card, spawnPoints[i - 1].position, 0.5f));
+            }
         }
-        Destroy(spawnPoints[ocupiedSpots - 1].GetChild(0).gameObject);
 
         ocupiedSpots--;
     }
@@ -80,9 +91,8 @@ public class spawnCards : MonoBehaviour
 
         // set zero position relative to parent
         card.transform.localPosition = Vector3.zero;
-
-        card.GetComponent<cardManager>().positionInHand = ocupiedSpots;
         ocupiedSpots++;
+        card.GetComponent<cardManager>().positionInHand = ocupiedSpots;
     }
     System.Collections.IEnumerator MoveCard(Transform card, Vector3 to, float duration)
     {

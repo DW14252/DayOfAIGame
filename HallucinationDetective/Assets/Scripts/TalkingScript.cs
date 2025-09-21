@@ -9,6 +9,8 @@ public class TalkingScript : MonoBehaviour
     public GameObject policeChief;
     public GameObject detective;
 
+    public GameObject whoDidItPanel;
+
     [System.Serializable]
     public class ConversationData
     {
@@ -40,8 +42,19 @@ public class TalkingScript : MonoBehaviour
     {
         if (dialougeNumber >= conversations.Length)
         {
-            SceneManager.LoadScene("MainGame");
-            return;
+            // If current scene is Intro
+            if (SceneManager.GetActiveScene().name == "Intro")
+            {
+                SceneManager.LoadScene("Tutorial");
+                return;
+            }
+            else
+            {
+                detective.SetActive(false);
+                policeChief.SetActive(false);
+                whoDidItPanel.SetActive(true);
+                return;
+            }
         }
 
         ConversationData current = conversations[dialougeNumber];

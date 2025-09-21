@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 [Serializable] public class Claim { public string id, text, topic, truth_label; public int difficulty; }
 [Serializable] public class Root  { public Claim[] claims; }
@@ -14,6 +15,7 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     public TMP_Text detectiveNotesText;
     public int score;
     public TMP_Text detectiveScoreText;
+
 
     [SerializeField] RectTransform card, canvasRoot, truePile, hallPile;
     [SerializeField] float snapRadius = 500f, snapBackTime = 0.15f;
@@ -31,6 +33,9 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     int streak = 0;
 
 
+    public bool isTutorialPosTrue = false;
+    public bool isTutorialPosHall = false;
+
 
     // Make a dictionary of max difficulty based on current score
     // e.g. 0-10 = 1, 11-25 = 2, 26-50 = 3, 51+ = 4
@@ -38,9 +43,9 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     Dictionary<int, int> difficultyMap = new Dictionary<int, int>()
     {
         { 10, 1 },
-        { 25, 2 },
-        { 50, 3 },
-        { 70, 4 },
+        { 20, 2 },
+        { 36, 3 },
+        { 54, 4 },
         { int.MaxValue, 5 }
     };
 
@@ -56,7 +61,15 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         startPos = card.anchoredPosition;
     }
 
-    void Start() => newClaim(max_difficulty);
+    void Start()
+    {
+        // if is maingame scene, start first claim
+        if (SceneManager.GetActiveScene().name == "MainGame")
+        {
+            newClaim(max_difficulty);
+            detectiveScoreText.text = "Score: " + score;
+        }
+    }
 
     public void newClaim(int max_difficulty)
     {
@@ -72,7 +85,7 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         var clm = filtered[UnityEngine.Random.Range(0, filtered.Length)];
         isTrue = clm.truth_label == "true";
         current_difficulty = clm.difficulty;
-
+        
         GeminiManager.GetComponent<cardAI>().claim = clm.text;
 
         if (typeCR != null) StopCoroutine(typeCR);
@@ -119,6 +132,32 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public void OnEndDrag(PointerEventData e)
     {
+        // if not in main scene, do nothing
+        if (SceneManager.GetActiveScene().name != "MainGame")
+        {
+            if (CloseTo(truePile, snapRadius))
+            {
+                card.anchoredPosition = startPos;
+
+                isTutorialPosTrue = true;
+                isTutorialPosHall = false;
+            }
+            else if (CloseTo(hallPile, snapRadius))
+            {
+                card.anchoredPosition = startPos;
+
+                isTutorialPosTrue = false;
+                isTutorialPosHall = true;
+            }
+
+            if (snapCR != null) StopCoroutine(snapCR);
+            // immediately snap back to start position
+            card.anchoredPosition = startPos;
+
+            return;
+        }
+
+
         if (CloseTo(truePile, snapRadius))
         {
             //card.anchoredPosition = truePile.anchoredPosition;
@@ -135,6 +174,12 @@ public class claimGenerator : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
                 screenFlash.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 1, 0, 0.1f);
                 Invoke("DisableFlash", 0.1f);
                 if (streak < 3) streak++;
+
+                // If score is 100 or more, load the win scene
+                if (score >= 100)
+                {
+                    SceneManager.LoadScene("WinScene");
+                }
             }
             else
             {

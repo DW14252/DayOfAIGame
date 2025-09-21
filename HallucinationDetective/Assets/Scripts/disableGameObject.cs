@@ -4,6 +4,8 @@ public class disableGameObject : MonoBehaviour
 {
     public GameObject gameObjectToDisable;
     public GameObject gameObjectToEnable;
+
+    public GameObject TutorialManager;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -17,6 +19,11 @@ public class disableGameObject : MonoBehaviour
     }
     public void DisableObject()
     {
+        gameObjectToDisable.SetActive(false);
+    }
+    public void DisableObjectTutorial()
+    {
+        TutorialManager.GetComponent<TutorialManager>().readInfo = true;
         gameObjectToDisable.SetActive(false);
     }
     public void DisableandEnableObject()
